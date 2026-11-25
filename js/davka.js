@@ -13,7 +13,7 @@ export const DAVKA = [
 ];
 
 // Prvé úrovne, kým backend nepošle iné. Stred stupnice; prispôsobovanie ich rýchlo doladí.
-export const ZACIATOCNE_UROVNE = { priklady: 4, postupnosti: 3, bludisko: 3 };
+export const ZACIATOCNE_UROVNE = { priklady: 4, postupnosti: 5, bludisko: 3 };
 
 export function ulohaDna(datum, poradie, urovne) {
   const typId = DAVKA[poradie];

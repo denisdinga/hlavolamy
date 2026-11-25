@@ -3,14 +3,17 @@
 // Úrovne (ukázaných členov: 5 pri úrovniach 1–5, 6 pri 6–10):
 //  1  pripočítavanie / odpočítavanie po 3 až 15
 //  2  pripočítavanie / odpočítavanie po 11 až 49, väčšie čísla
-//  3  násobenie ×2 alebo ×3
+//  3  násobenie ×2, ×3 alebo ×4
 //  4  rozdiel rastie o 1–3 (+4, +6, +8, …)
-//  5  násobenie ×2 až ×4 alebo delenie ÷2, ÷3
+//  5  násobenie ×3, ×4 alebo delenie ÷2, ÷3
 //  6  striedavo + a − (+7, −3, +7, −3, …)
 //  7  dve postupnosti zapletené do seba (každé druhé číslo)
 //  8  rozdiel sa zdvojnásobuje alebo strojnásobuje (+2, +4, +8, …)
 //  9  každé číslo je súčet dvoch predchádzajúcich
 // 10  dvojkrokové pravidlo: ×2 alebo ×3 a ešte ± niečo (3, 7, 15, 31, …)
+//
+// Pestrosť: každá úloha si vyberie pravidlo z aktuálnej úrovne (častejšie) alebo z 1–2 úrovní pod ňou,
+// aby sa v dávke nestriedal stále ten istý druh radu.
 //
 // Každá postupnosť musí mať jediné rozumné pokračovanie — overuje test.
 
@@ -38,7 +41,7 @@ function vytvorPostupnost(r, u) {
       break;
     }
     case 3: case 5: {
-      const k = u === 3 ? r.vyber([2, 3]) : r.vyber([2, 3, 4, 'd2', 'd3']);
+      const k = u === 3 ? r.vyber([2, 3, 3, 4]) : r.vyber([3, 4, 'd2', 'd3']); // ×2 iba zriedka — bolo ho priveľa
       if (typeof k === 'string') {
         const q = k === 'd2' ? 2 : 3;
         let x = r.cislo(1, q === 2 ? 15 : 5) * q ** n;
@@ -46,8 +49,8 @@ function vytvorPostupnost(r, u) {
         pravidlo = q === 2 ? 'Každé ďalšie číslo je polovica predchádzajúceho.' : 'Každé ďalšie číslo je tretina predchádzajúceho.';
         napoveda = `Porovnaj ${f(cleny[0])} a ${f(cleny[1])}. Koľkokrát je menšie?`;
       } else {
-        const maxStart = { 2: 12, 3: 4, 4: 2 }[k];
-        let x = r.cislo(1, maxStart);
+        const [od, po] = { 2: [3, 15], 3: [2, 7], 4: [2, 3] }[k];
+        let x = r.cislo(od, po);
         for (let i = 0; i <= n; i++) { cleny.push(x); x *= k; }
         pravidlo = `Každé ďalšie číslo je ${k}-krát väčšie.`;
         napoveda = `Čísla rastú stále rýchlejšie. Koľkokrát je ${f(cleny[2])} väčšie ako ${f(cleny[1])}?`;
@@ -113,7 +116,8 @@ export default {
   urovne: 10,
 
   vytvor(rng, uroven) {
-    const u = Math.min(10, Math.max(1, uroven));
+    const uroven1 = Math.min(10, Math.max(1, uroven));
+    const u = rng.vyber([uroven1, uroven1, uroven1 - 1, uroven1 - 2, uroven1 - 3].filter(x => x >= 1));
     // Opakujúce sa číslo (napr. 27 dvakrát) mätie — vtedy skúsime inú postupnosť.
     let p = vytvorPostupnost(rng, u);
     for (let i = 0; i < 20 && new Set([...p.ukazane, p.odpoved]).size !== p.ukazane.length + 1; i++) {

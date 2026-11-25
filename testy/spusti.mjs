@@ -93,7 +93,7 @@ for (let u = 1; u <= 10; u++) {
     const ul = postupnosti.vytvor(vytvorRng(s), u);
     const t = ul.data.cleny;
     const p = `postupnosti u${u} ${s} [${t.join(', ')}] → ${ul.odpoved}`;
-    over(t.length === (u >= 6 ? 6 : 5), `${p}: počet ukázaných`);
+    over(t.length === 5 || t.length === 6, `${p}: počet ukázaných`);
     over(t.every(celeNezaporne) && celeNezaporne(ul.odpoved), `${p}: celé nezáporné čísla`);
     over(Math.max(...t, ul.odpoved) <= 6000, `${p}: rozumná veľkosť čísel`);
     over(new Set([...t, ul.odpoved]).size === t.length + 1, `${p}: bez opakujúcich sa čísel (vrátane odpovede)`);
