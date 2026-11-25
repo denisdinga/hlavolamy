@@ -1,6 +1,6 @@
 // Typ úlohy: Zapamätaj si čísla.
 // Na chvíľu ukáže rad číslic, potom ich skryje a dedko ich napíše (na vyšších úrovniach pospiatky).
-// Pri demencii je krátkodobá pamäť to najcennejšie, čo sa dá trénovať.
+// Tréning krátkodobej pamäte.
 //
 // Úrovne (počet číslic, smer):
 //  1 4   2 5   3 6   4 4 pospiatky   5 7   6 5 pospiatky   7 8   8 6 pospiatky   9 9   10 7 pospiatky
