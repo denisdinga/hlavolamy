@@ -11,10 +11,6 @@ const datum = dnes();
 const { hrac, urovne } = nacitajZOdkazu();
 let stav = stavDna(datum);
 
-const pozdrav = () => {
-  const h = new Date().getHours();
-  return h < 10 ? 'Dobré ráno' : h < 18 ? 'Dobrý deň' : 'Dobrý večer';
-};
 const velke = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 // oslovenie prichádza z odkazu → nikdy ho nevkladať ako HTML
 const bezpecne = (s) => String(s).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
@@ -39,10 +35,10 @@ function uvod() {
   const rozrobene = stav.hotove.length > 0;
   obsah.innerHTML = `
     <section class="obrazovka uvod">
-      <h1>${pozdrav()}, ${hrac.o}!</h1>
+      <h1>Ahoj, ${hrac.o}!</h1>
       <p class="veta">${rozrobene
         ? `Dnes už máš hotové ${stav.hotove.length} z ${DAVKA.length} úloh. Poďme dokončiť zvyšok.`
-        : `Dnes ťa čaká ${DAVKA.length} úloh: príklady, postupnosti a dve bludiská. Je to asi na 10 minút.`}</p>
+        : `Dnes ťa čaká ${DAVKA.length} úloh: príklady, číselné rady, pamäť, znamienka, nákup a čas, pyramída a bludisko. Je to asi na 10 minút.`}</p>
       <button type="button" class="tl tl-hlavne" id="zacat">${rozrobene ? 'Pokračovať' : 'Začať'}</button>
     </section>`;
   document.getElementById('zacat').addEventListener('click', () => dalsia());
