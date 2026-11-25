@@ -3,17 +3,22 @@ import { vytvorRng } from './rng.js';
 import priklady from './typy/priklady.js';
 import postupnosti from './typy/postupnosti.js';
 import bludisko from './typy/bludisko.js';
+import pamat from './typy/pamat.js';
+import znamienka from './typy/znamienka.js';
+import pyramida from './typy/pyramida.js';
+import kazdodenne from './typy/kazdodenne.js';
 
-export const TYPY = { priklady, postupnosti, bludisko };
+export const TYPY = { priklady, postupnosti, bludisko, pamat, znamienka, pyramida, kazdodenne };
 
-// 14 úloh, asi 15 minút: 8 príkladov, 4 postupnosti, 2 bludiská (v polovici a na konci).
+// 14 úloh, asi 10–15 minút, pestro zamiešané (vnuk: „same príklady je jednotvárne“, 2026-11-25):
+// 4 príklady, 2 postupnosti, 2 pamäť, 2 znamienka, 2 každodenné počty, 1 pyramída, 1 bludisko.
 export const DAVKA = [
-  'priklady', 'priklady', 'postupnosti', 'priklady', 'postupnosti', 'priklady', 'bludisko',
-  'priklady', 'postupnosti', 'priklady', 'priklady', 'postupnosti', 'priklady', 'bludisko',
+  'priklady', 'pamat', 'postupnosti', 'znamienka', 'kazdodenne', 'priklady', 'pyramida',
+  'pamat', 'postupnosti', 'znamienka', 'priklady', 'kazdodenne', 'priklady', 'bludisko',
 ];
 
 // Prvé úrovne, kým backend nepošle iné. Stred stupnice; prispôsobovanie ich rýchlo doladí.
-export const ZACIATOCNE_UROVNE = { priklady: 4, postupnosti: 5, bludisko: 5 };
+export const ZACIATOCNE_UROVNE = { priklady: 4, postupnosti: 5, bludisko: 5, pamat: 2, znamienka: 4, pyramida: 3, kazdodenne: 4 };
 
 export function ulohaDna(datum, poradie, urovne) {
   const typId = DAVKA[poradie];
@@ -22,7 +27,7 @@ export function ulohaDna(datum, poradie, urovne) {
 
 // „Ešte jedna úloha“ po dávke — typy sa striedajú.
 export function extraUloha(datum, k, urovne) {
-  const poradieTypov = ['priklady', 'postupnosti', 'bludisko'];
+  const poradieTypov = ['priklady', 'pamat', 'postupnosti', 'znamienka', 'kazdodenne', 'pyramida', 'bludisko'];
   const typId = poradieTypov[k % poradieTypov.length];
   return vytvorUlohu(typId, `${datum}|extra|${k}`, urovne[typId] ?? 1);
 }

@@ -115,7 +115,7 @@ function hrajUlohu({ typId, typ, uroven, uloha }, { extra, poradie }) {
       ovladanie.napoveda('Skúsme ešte raz.', uloha.napoveda);
       return;
     }
-    ovladanie.ukazOdpoved(formatuj(uloha.odpoved), uloha.vysvetlenie);
+    ovladanie.ukazOdpoved(uloha.odpovedText ?? formatuj(uloha.odpoved), uloha.vysvetlenie);
     ukonci('ukazane');
   });
 }

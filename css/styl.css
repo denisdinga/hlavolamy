@@ -23,6 +23,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
@@ -132,6 +133,8 @@ h1 { font-size: clamp(44px, 6vw, 64px); line-height: 1.1; margin: 0 0 20px; }
 .kl:active { background: var(--mriezka); }
 .kl-zmaz { font-size: 24px; }
 .kl-hotovo { background: var(--modra); border-color: var(--modra); color: #fff; font-size: 26px; }
+.kl-siroke { grid-column: 1 / -1; }
+.kl:disabled:not(.kl-hotovo) { opacity: .35; }
 .kl-hotovo:disabled { background: var(--list); color: var(--okraj); border-color: var(--mriezka); cursor: default; }
 
 /* Tablet na šírku / PC: klávesnica vpravo */
@@ -192,6 +195,37 @@ h1 { font-size: clamp(44px, 6vw, 64px); line-height: 1.1; margin: 0 0 20px; }
   .bludisko-tlacidla { flex-direction: column; }
   .bludisko { --pole: clamp(16px, min(calc((100vh - 200px) / var(--n)), calc((100vw - 420px) / var(--n))), 60px); }
 }
+
+/* ---------- Zapamätaj si ---------- */
+.pamat-cisla { letter-spacing: .25em; font-size: 1.1em; }
+.pamat-cisla.ukazane { animation: none; }
+
+/* ---------- Znamienka ---------- */
+.zadanie.znamienka { gap: 10px 12px; }
+.slot {
+  min-width: 1.6em; min-height: 1.5em; padding: 0 8px;
+  font: inherit; font-weight: 700; line-height: 1.2;
+  background: var(--list); color: var(--atrament);
+  border: 4px solid var(--atrament); border-radius: 10px;
+}
+.slot.prazdny { border-style: dashed; border-color: var(--okraj); color: var(--okraj); }
+.slot.aktivny { outline: 4px solid var(--modra); outline-offset: 3px; }
+.slot.ok { border-color: var(--zelena); background: var(--zelena-svetla); color: var(--zelena); }
+.slot.ukazana { border-color: var(--jantar); background: var(--jantar-svetly); color: var(--jantar); }
+.klavesnica-ops .kl-op { font-size: 48px; min-height: 96px; }
+.klavesnica-ops { grid-template-columns: repeat(2, 1fr); }
+
+/* ---------- Pyramída ---------- */
+.pyramida { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: clamp(26px, 4vw, 40px); }
+.pyr-riadok { display: flex; gap: 6px; }
+.tehla {
+  min-width: 2.6em; height: 1.7em; padding: 0 6px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--list); border: 3px solid var(--atrament); border-radius: 6px;
+}
+.tehla.prazdna-tehla { border-color: var(--okraj); background: var(--papier); }
+.tehla.ciel-tehla { border: 0; padding: 0; }
+.tehla .odpoved { min-width: 2.6em; height: 1.7em; display: flex; align-items: center; justify-content: center; padding: 0 6px; }
 
 @media (prefers-reduced-motion: no-preference) {
   .odpoved.ok { animation: potvrd .35s ease-out; }

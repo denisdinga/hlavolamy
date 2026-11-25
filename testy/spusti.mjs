@@ -5,6 +5,10 @@ import priklady from '../js/typy/priklady.js';
 import postupnosti from '../js/typy/postupnosti.js';
 import bludisko, { najdiCestu, susedia } from '../js/typy/bludisko.js';
 import { DAVKA, TYPY, ulohaDna, ZACIATOCNE_UROVNE } from '../js/davka.js';
+import pamat from '../js/typy/pamat.js';
+import znamienka, { vsetkyKombinacie } from '../js/typy/znamienka.js';
+import pyramida, { postavPyramidu } from '../js/typy/pyramida.js';
+import kazdodenne, { naCenty, naMinuty } from '../js/typy/kazdodenne.js';
 
 const SEEDOV = 300;
 let chyb = 0, kontrol = 0;
@@ -141,6 +145,83 @@ for (let u = 1; u <= 10; u++) {
   }
 }
 over(bludisko.vysledok({ pomoci: 0 }) === 'prvy' && bludisko.vysledok({ pomoci: 1 }) === 'druhy' && bludisko.vysledok({ pomoci: 2 }) === 'ukazane', 'bludisko: výsledok podľa pomocí');
+
+// ---------- Zapamätaj si ----------
+const PAMAT_DLZKA = [4, 5, 6, 4, 7, 5, 8, 6, 9, 7];
+for (let u = 1; u <= 10; u++) for (const sd of seedy('pa', u)) {
+  const ul = pamat.vytvor(vytvorRng(sd), u); const p = `pamat u${u} ${sd}`;
+  const { cisla, pospiatky } = ul.data;
+  over(cisla.length === PAMAT_DLZKA[u - 1], `${p}: počet číslic`);
+  over(cisla[0] !== 0 && cisla.every((c, i) => i === 0 || c !== cisla[i - 1]), `${p}: prvá nie je 0, susedné sa neopakujú`);
+  const nez = (pospiatky ? [...cisla].reverse() : cisla).join('');
+  over(nez === ul.odpoved && pamat.over(ul, nez) && !pamat.over(ul, nez.slice(1)), `${p}: odpoveď a over`);
+  over(pospiatky === [4, 6, 8, 10].includes(u), `${p}: pospiatky podľa úrovne`);
+}
+
+// ---------- Znamienka ----------
+// nezávislý výpočet cez eval s × → *, ÷ → / (štandardné poradie)
+const evalOps = (c, o) => { const e = c.map((x, i) => (i ? ({ '+': '+', '−': '-', '×': '*', '÷': '/' })[o[i - 1]] : '') + x).join(''); return Function(`return (${e})`)(); };
+const ltrOps = (c, o) => o.reduce((v, op, i) => ({ '+': v + c[i + 1], '−': v - c[i + 1], '×': v * c[i + 1], '÷': v / c[i + 1] })[op], c[0]);
+for (let u = 1; u <= 10; u++) for (const sd of seedy('zn', u).slice(0, 150)) {
+  const ul = znamienka.vytvor(vytvorRng(sd), u); const p = `znamienka u${u} ${sd} ${ul.zadanie}`;
+  const { cisla, vysledok, pocet } = ul.data; const ops = ul.odpoved.split('');
+  over(ops.length === pocet && pocet === (u <= 3 ? 1 : u <= 7 ? 2 : 3), `${p}: počet znamienok`);
+  over(evalOps(cisla, ops) === vysledok && ltrOps(cisla, ops) === vysledok, `${p}: sedí aj zľava doprava aj s poradím`);
+  over(Number.isInteger(vysledok) && vysledok >= 0, `${p}: výsledok celý nezáporný`);
+  const ine = vsetkyKombinacie(pocet).filter(c => c.join('') !== ul.odpoved && (Math.abs(evalOps(cisla, c) - vysledok) < 1e-9 || Math.abs(ltrOps(cisla, c) - vysledok) < 1e-9));
+  over(ine.length === 0, `${p}: DVOJZNAČNÉ — aj ${ine.map(c => c.join('')).join(', ')}`);
+  over(znamienka.over(ul, ul.odpoved) && !znamienka.over(ul, ops.map(o => o === '+' ? '−' : '+').join('')), `${p}: over`);
+}
+
+// ---------- Pyramída ----------
+const PYR_ZAKLAD = [3, 3, 4, 4, 3, 4, 4, 5, 5, 5];
+for (let u = 1; u <= 10; u++) for (const sd of seedy('py', u).slice(0, 150)) {
+  const ul = pyramida.vytvor(vytvorRng(sd), u); const p = `pyramida u${u} ${sd}`;
+  const { n, riadky, dane, ciel } = ul.data;
+  over(n === PYR_ZAKLAD[u - 1], `${p}: veľkosť základu`);
+  const nez = postavPyramidu(riadky[0]);
+  over(JSON.stringify(nez) === JSON.stringify(riadky), `${p}: pyramída sedí (súčty)`);
+  over(ul.odpoved === riadky[ciel[0]][ciel[1]], `${p}: odpoveď je hodnota cieľovej tehly`);
+  over(!dane.some(([r, q]) => r === ciel[0] && q === ciel[1]), `${p}: cieľ nie je medzi danými`);
+  // jednoznačnosť hrubou silou: iný základ (±1..3 v každej tehle) so zhodnými danými tehlami nesmie zmeniť cieľ
+  if (n <= 4) {
+    let ok = true; const zaklad = riadky[0];
+    const posuny = [-3, -2, -1, 0, 1, 2, 3];
+    const rek = (i, z) => {
+      if (!ok) return;
+      if (i === n) {
+        const r2 = postavPyramidu(z);
+        if (dane.every(([r, q]) => r2[r][q] === riadky[r][q]) && r2[ciel[0]][ciel[1]] !== ul.odpoved) ok = false;
+        return;
+      }
+      for (const d of posuny) rek(i + 1, [...z, zaklad[i] + d]);
+    };
+    rek(0, []);
+    over(ok, `${p}: jednoznačné (hrubá sila)`);
+  }
+  over(pyramida.over(ul, String(ul.odpoved)) && !pyramida.over(ul, String(ul.odpoved + 1)), `${p}: over`);
+}
+
+// ---------- Každodenné počty ----------
+for (let u = 1; u <= 10; u++) for (const sd of seedy('kd', u)) {
+  const ul = kazdodenne.vytvor(vytvorRng(sd), u); const p = `kazdodenne u${u} ${sd} „${ul.zadanie}“`;
+  over(!/NaN|undefined/.test(ul.zadanie + ul.napoveda + ul.vysvetlenie + ul.odpovedText), `${p}: texty`);
+  if (ul.data.druh === 'peniaze') {
+    const sucet = ul.data.polozky.reduce((a, b) => a + b, 0);
+    over(ul.odpoved === ul.data.bankovka - sucet && ul.odpoved > 0, `${p}: výdavok = bankovka − nákup`);
+    // nezávisle aj z textu: všetky sumy „x,yy €“ v zadaní
+    over(kazdodenne.over(ul, ul.odpovedText) && kazdodenne.over(ul, ul.odpovedText.replace(',', '.')), `${p}: over(správna)`);
+    over(!kazdodenne.over(ul, String((ul.odpoved + 1) / 100).replace('.', ',')), `${p}: over(zlá)`);
+    if (u <= 2) over(ul.odpoved % 100 === 0, `${p}: celé eurá`);
+  } else {
+    const ciel = ((ul.data.zaciatok + ul.data.dlzka) % 1440 + 1440) % 1440;
+    over(naMinuty(ul.odpovedText) === ciel, `${p}: čas sedí`);
+    over(kazdodenne.over(ul, ul.odpovedText) && !kazdodenne.over(ul, '0:01'), `${p}: over`);
+    if (u <= 2) over(ul.data.dlzka % 30 === 0, `${p}: polhodiny`);
+  }
+}
+over(naCenty('2,36') === 236 && naCenty('3') === 300 && naCenty('2,5') === 250 && naCenty('x') === null, 'naCenty');
+over(naMinuty('14:05') === 845 && naMinuty('1405') === 845 && naMinuty('9') === 540 && naMinuty('25:00') === null, 'naMinuty');
 
 // ---------- Dávka a pomocné ----------
 over(DAVKA.length === 14, 'dávka má 14 úloh');
