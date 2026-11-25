@@ -142,9 +142,12 @@ h1 { font-size: clamp(44px, 6vw, 64px); line-height: 1.1; margin: 0 0 20px; }
 }
 
 /* ---------- Bludisko ---------- */
-.list-bludisko { display: flex; flex-direction: column; align-items: center; padding: 20px 24px; }
+.list-bludisko { display: flex; flex-direction: column; align-items: center; padding: 12px 12px; }
+.list-bludisko .popis { font-size: 22px; margin-bottom: 6px; }
+.list-bludisko .spatna-vazba { min-height: 1.6em; }
 .bludisko {
-  --pole: clamp(36px, min(calc((100vw - 120px) / var(--n)), calc((100vh - 330px) / var(--n))), 84px);
+  --pole: clamp(16px, min(calc((100vw - 90px) / var(--n)), calc((100vh - 250px) / var(--n))), 60px);
+  --hr: max(1.5px, calc(var(--pole) * .07));
   position: relative;
   display: grid;
   grid-template-columns: repeat(var(--n), var(--pole));
@@ -166,12 +169,12 @@ h1 { font-size: clamp(44px, 6vw, 64px); line-height: 1.1; margin: 0 0 20px; }
     inset 0 calc(-1 * var(--sd)) 0 var(--stena),
     inset var(--sl) 0 0 var(--stena);
   display: flex; align-items: center; justify-content: center;
-  font-size: clamp(12px, calc(var(--pole) * .26), 18px); font-weight: 700;
+  font-size: clamp(9px, calc(var(--pole) * .3), 16px); font-weight: 700; line-height: 1; text-align: center;
 }
-.pole.s-h { --sh: 3px; }
-.pole.s-p { --sp: 3px; }
-.pole.s-d { --sd: 3px; }
-.pole.s-l { --sl: 3px; }
+.pole.s-h { --sh: var(--hr); }
+.pole.s-p { --sp: var(--hr); }
+.pole.s-d { --sd: var(--hr); }
+.pole.s-l { --sl: var(--hr); }
 .pole.start { background: var(--zelena-svetla); }
 .pole.ciel { background: var(--jantar-svetly); }
 .pole span { position: relative; z-index: 2; pointer-events: none; }
@@ -187,7 +190,7 @@ h1 { font-size: clamp(44px, 6vw, 64px); line-height: 1.1; margin: 0 0 20px; }
 @media (min-width: 1000px) and (min-aspect-ratio: 1/1) {
   .bludisko-obal { grid-template-columns: 1fr auto; align-items: start; }
   .bludisko-tlacidla { flex-direction: column; }
-  .bludisko { --pole: clamp(36px, calc((100vh - 250px) / var(--n)), 84px); }
+  .bludisko { --pole: clamp(16px, min(calc((100vh - 200px) / var(--n)), calc((100vw - 420px) / var(--n))), 60px); }
 }
 
 @media (prefers-reduced-motion: no-preference) {

@@ -6,35 +6,38 @@
 //  - ťuk na čiaru (alebo ťah späť) — čiara sa skráti
 //  - na PC šípky
 //
-// Úrovne: veľkosť mriežky (nepárne úrovne pod 9 kratšia cesta, ostatné najdlhšia z 5)
-//  1 6×6  2 7×7  3 8×8  4 8×8  5 9×9  6 10×10  7 10×10  8 11×11  9 12×12  10 12×12
+// Úrovne: veľkosť mriežky (vždy sa vyberie bludisko s najdlhšou cestou z 5 kandidátov)
+//  1 12×12  2 14×14  3 16×16  4 18×18  5 20×20  6 22×22  7 24×24  8 26×26  9 28×28  10 30×30
+// Generátor „rastúci strom“ (napoly najnovšie, napoly náhodné políčko): dlhé kľukaté chodby
+// aj veľa odbočiek a slepých uličiek. 8×8 bolo pre dedka „extrémne ľahké“ (2026-11-25).
 //
 // Bludisko je dokonalé (strom): medzi každými dvoma políčkami vedie práve jedna cesta.
 // Výsledok: „prvy“ bez pomoci, „druhy“ po jednej pomoci, „ukazane“ keď sa ukázala celá cesta.
 
-const VELKOST = [6, 7, 8, 8, 9, 10, 10, 11, 12, 12];
+const VELKOST = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
 const SMERY = [[0, -1, 'h'], [1, 0, 'p'], [0, 1, 'd'], [-1, 0, 'l']]; // hore, vpravo, dole, vľavo
 const OPACNY = { h: 'd', d: 'h', l: 'p', p: 'l' };
 
-// Vytvorí bludisko n×n metódou „rekurzívneho návratu“ (iteratívne).
+// Vytvorí bludisko n×n algoritmom „rastúci strom“ (growing tree).
 export function vytvorBludisko(rng, n) {
   const otvorene = Array.from({ length: n }, () => Array.from({ length: n }, () => new Set()));
   const navstivene = Array.from({ length: n }, () => Array(n).fill(false));
-  const zasobnik = [[0, 0]];
+  const aktivne = [[0, 0]];
   navstivene[0][0] = true;
-  while (zasobnik.length) {
-    const [x, y] = zasobnik[zasobnik.length - 1];
+  while (aktivne.length) {
+    const i = rng.dalsie() < 0.5 ? aktivne.length - 1 : Math.floor(rng.dalsie() * aktivne.length);
+    const [x, y] = aktivne[i];
     const moznosti = SMERY.filter(([dx, dy]) => {
       const nx = x + dx, ny = y + dy;
       return nx >= 0 && ny >= 0 && nx < n && ny < n && !navstivene[ny][nx];
     });
-    if (!moznosti.length) { zasobnik.pop(); continue; }
+    if (!moznosti.length) { aktivne.splice(i, 1); continue; }
     const [dx, dy, s] = rng.vyber(moznosti);
     const nx = x + dx, ny = y + dy;
     otvorene[y][x].add(s);
     otvorene[ny][nx].add(OPACNY[s]);
     navstivene[ny][nx] = true;
-    zasobnik.push([nx, ny]);
+    aktivne.push([nx, ny]);
   }
   return otvorene.map(riadok => riadok.map(s => [...s].sort().join('')));
 }
@@ -93,7 +96,7 @@ export default {
       const bl = vytvorBludisko(rng, n);
       return { bl, cesta: najdiCestu(bl) };
     }).sort((a, b) => a.cesta.length - b.cesta.length);
-    const vybrany = (u % 2 === 1 && u < 9) ? kandidati[0] : kandidati[kandidati.length - 1];
+    const vybrany = kandidati[kandidati.length - 1];
     return {
       zadanie: `Bludisko ${n}×${n}`,
       odpoved: vybrany.cesta.length,
@@ -157,10 +160,10 @@ export default {
       const s = r.width / n;
       svg.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
       ciara.setAttribute('points', cesta.map(([x, y]) => `${(x + .5) * s},${(y + .5) * s}`).join(' '));
-      ciara.style.strokeWidth = Math.max(8, s * 0.3) + 'px';
+      ciara.style.strokeWidth = Math.max(4, s * 0.34) + 'px';
       const [kx, ky] = cesta[cesta.length - 1];
       bodka.setAttribute('cx', (kx + .5) * s); bodka.setAttribute('cy', (ky + .5) * s);
-      bodka.setAttribute('r', Math.max(9, s * 0.3));
+      bodka.setAttribute('r', Math.max(6, s * 0.36));
     };
     const koniec = () => cesta[cesta.length - 1];
     const jeV = ([x, y]) => cesta.findIndex(([a, b]) => a === x && b === y);

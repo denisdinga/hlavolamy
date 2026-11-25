@@ -111,7 +111,7 @@ for (let u = 1; u <= 10; u++) {
 }
 
 // ---------- Bludisko ----------
-const VELKOST = [6, 7, 8, 8, 9, 10, 10, 11, 12, 12];
+const VELKOST = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
 for (let u = 1; u <= 10; u++) {
   for (const s of seedy('bl', u).slice(0, 120)) {
     const ul = bludisko.vytvor(vytvorRng(s), u);
