@@ -16,7 +16,21 @@ const TOVAR = [
 ];
 // [2–4 kusy, 5 a viac kusov, cena od, cena do]
 const KUSY = [['rožky', 'rožkov', 9, 19], ['žemle', 'žemlí', 12, 25], ['banány', 'banánov', 20, 45], ['pomaranče', 'pomarančov', 30, 69]];
-const MIESTA = ['autobus', 'vlak', 'návšteva u lekára', 'omša', 'cesta do mesta', 'prechádzka'];
+// Každá situácia má vlastnú vetu (dopredu aj dozadu) a najdlhšie realistické trvanie v minútach.
+const UDALOSTI = [
+  { max: 600, dopredu: (z, d) => `Vlak odchádza o ${z} a cesta trvá ${d}. O koľkej príde do cieľa?`,
+    dozadu: (k, d) => `Vlak prišiel do cieľa o ${k}. Cesta trvala ${d}. O koľkej odchádzal?` },
+  { max: 600, dopredu: (z, d) => `Autobus odchádza o ${z} a cesta trvá ${d}. O koľkej prídeš?`,
+    dozadu: (k, d) => `Autobus prišiel do cieľa o ${k}. Cesta trvala ${d}. O koľkej odchádzal?` },
+  { max: 600, dopredu: (z, d) => `Výlet sa začína o ${z} a potrvá ${d}. O koľkej sa skončí?`,
+    dozadu: (k, d) => `Výlet sa skončil o ${k} a trval ${d}. O koľkej sa začal?` },
+  { max: 200, dopredu: (z, d) => `Film v televízii sa začína o ${z} a trvá ${d}. O koľkej sa skončí?`,
+    dozadu: (k, d) => `Film v televízii sa skončil o ${k} a trval ${d}. O koľkej sa začal?` },
+  { max: 120, dopredu: (z, d) => `Návšteva u lekára sa začína o ${z} a potrvá ${d}. O koľkej sa skončí?`,
+    dozadu: (k, d) => `Návšteva u lekára sa skončila o ${k} a trvala ${d}. O koľkej sa začala?` },
+  { max: 90, dopredu: (z, d) => `Omša sa začína o ${z} a trvá ${d}. O koľkej sa skončí?`,
+    dozadu: (k, d) => `Omša sa skončila o ${k} a trvala ${d}. O koľkej sa začala?` },
+];
 
 export const eura = (centy) => `${Math.floor(centy / 100)},${String(centy % 100).padStart(2, '0')} €`;
 export const cas = (min) => { const m = ((min % 1440) + 1440) % 1440; return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`; };
@@ -78,12 +92,12 @@ function casUloha(r, u) {
   const zaciatok = Math.round(r.cislo(6 * 60, 18 * 60) / krok) * krok;
   let dlzka = u <= 2 ? r.cislo(1, 6) * 30 : u <= 5 ? r.cislo(7, 40) * 5 : r.cislo(25, 290);
   if (u >= 3 && u <= 5 && (zaciatok % 60) + (dlzka % 60) < 60) dlzka += 60 - (zaciatok % 60); // prechod cez celú hodinu
-  const miesto = r.vyber(MIESTA);
+  const udalost = r.vyber(UDALOSTI.filter(x => x.max >= dlzka));
   const dozadu = u >= 9 && r.dalsie() < 0.5;
   if (dozadu) {
     const prichod = zaciatok + dlzka;
     return {
-      zadanie: `${miesto.charAt(0).toUpperCase() + miesto.slice(1)}: skončilo to o ${cas(prichod)} a trvalo ${trvanie(dlzka)}. O koľkej sa to začalo?`,
+      zadanie: udalost.dozadu(cas(prichod), trvanie(dlzka)),
       odpoved: zaciatok, odpovedText: cas(zaciatok),
       napoveda: `Odpočítaj od ${cas(prichod)} najprv hodiny, potom minúty.`,
       vysvetlenie: `${cas(prichod)} − ${trvanie(dlzka)} = ${cas(zaciatok)}.`,
@@ -92,7 +106,7 @@ function casUloha(r, u) {
   }
   const koniec = zaciatok + dlzka;
   return {
-    zadanie: `${miesto.charAt(0).toUpperCase() + miesto.slice(1)} sa začína o ${cas(zaciatok)} a trvá ${trvanie(dlzka)}. O koľkej to skončí?`,
+    zadanie: udalost.dopredu(cas(zaciatok), trvanie(dlzka)),
     odpoved: koniec, odpovedText: cas(koniec),
     napoveda: `Pripočítaj k ${cas(zaciatok)} najprv hodiny, potom minúty. Hodina má 60 minút.`,
     vysvetlenie: `${cas(zaciatok)} + ${trvanie(dlzka)} = ${cas(koniec)}.`,

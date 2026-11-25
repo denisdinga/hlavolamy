@@ -227,6 +227,37 @@ h1 { font-size: clamp(44px, 6vw, 64px); line-height: 1.1; margin: 0 0 20px; }
 .tehla.ciel-tehla { border: 0; padding: 0; }
 .tehla .odpoved { min-width: 2.6em; height: 1.7em; display: flex; align-items: center; justify-content: center; padding: 0 6px; }
 
+/* ---------- Mobil (telefón na výšku) ---------- */
+@media (max-width: 600px) {
+  body { font-size: 20px; }
+  .hore { flex-wrap: wrap; gap: 8px; padding: 12px 14px 4px; }
+  .datum { font-size: 19px; width: 100%; }
+  .bodky { gap: 5px; flex-wrap: wrap; }
+  .bodka { width: 14px; height: 14px; border-width: 2px; }
+  .obsah { padding: 4px 10px 20px; }
+  .list { padding: 14px 12px; }
+  .ciselna { gap: 12px; }
+  .ciselna .list { min-height: 0; }
+  .popis { font-size: 19px; }
+  .zadanie { font-size: clamp(30px, 9vw, 44px); gap: 8px 10px; margin: 6px 0; }
+  .spatna-vazba { font-size: 19px; min-height: 2.2em; }
+  .spatna-vazba strong { font-size: 22px; }
+  .klavesnica { gap: 8px; }
+  .kl { min-height: 62px; font-size: 32px; border-radius: 12px; }
+  .kl-zmaz, .kl-hotovo { font-size: 19px; }
+  .klavesnica-ops .kl-op { min-height: 72px; font-size: 40px; }
+  .tl { min-height: 64px; font-size: 24px; padding: 0 28px; min-width: 0; }
+  .dalej-obal { margin-top: 12px; }
+  .dalej-obal .tl { width: 100%; }
+  h1 { font-size: 36px; } .veta { font-size: 22px; }
+  .pyramida { font-size: 19px; gap: 4px; } .pyr-riadok { gap: 4px; }
+  .tehla, .tehla .odpoved { min-width: 2.3em; }
+  .list-bludisko { padding: 10px 6px; }
+  .list-bludisko .popis { font-size: 17px; }
+  .bludisko { --pole: clamp(12px, calc((100vw - 52px) / var(--n)), 40px); }
+  .bludisko-tlacidla .tl { font-size: 19px; padding: 0 16px; flex: 1; }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .odpoved.ok { animation: potvrd .35s ease-out; }
   @keyframes potvrd { 50% { transform: scale(1.08); } }
