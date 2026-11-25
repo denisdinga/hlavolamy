@@ -42,7 +42,7 @@ function uvod() {
       <h1>${pozdrav()}, ${hrac.o}!</h1>
       <p class="veta">${rozrobene
         ? `Dnes už máš hotové ${stav.hotove.length} z ${DAVKA.length} úloh. Poďme dokončiť zvyšok.`
-        : `Dnes ťa čaká ${DAVKA.length} úloh: príklady, postupnosti a dve bludiská. Je to asi na štvrť hodiny.`}</p>
+        : `Dnes ťa čaká ${DAVKA.length} úloh: príklady, postupnosti a dve bludiská. Je to asi na 10 minút.`}</p>
       <button type="button" class="tl tl-hlavne" id="zacat">${rozrobene ? 'Pokračovať' : 'Začať'}</button>
     </section>`;
   document.getElementById('zacat').addEventListener('click', () => dalsia());
