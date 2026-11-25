@@ -45,7 +45,7 @@ function vypocitajZadanie(text) {
   ops.forEach((op, i) => { v = op === '+' ? v + st[i + 1] : v - st[i + 1]; });
   return v;
 }
-const ROZSAH = { 1: 10, 2: 20, 3: 99, 4: 99, 5: 81, 6: 9, 7: 999, 8: 441, 9: 999, 10: 350 };
+const ROZSAH = { 1: 999, 2: 81, 3: 999, 4: 873, 5: 333, 6: 540, 7: 931, 8: 3501, 9: 7031, 10: 1012 };
 for (let u = 1; u <= 10; u++) {
   for (const s of seedy('pr', u)) {
     const ul = priklady.vytvor(vytvorRng(s), u);
@@ -60,11 +60,9 @@ for (let u = 1; u <= 10; u++) {
     over(typeof ul.napoveda === 'string' && ul.napoveda.length > 10, `${p}: nápoveda`);
     over(!/NaN|undefined/.test(ul.zadanie + ul.napoveda + ul.vysvetlenie), `${p}: texty bez NaN/undefined`);
     const { op, a, b } = ul.data;
-    if (u === 3 && op === '+') over((a % 10) + (b % 10) < 10, `${p}: u3 bez prechodu`);
-    if (u === 3 && op === '−') over((a % 10) >= (b % 10), `${p}: u3 bez prechodu`);
-    if (u === 4 && op === '+') over((a % 10) + (b % 10) >= 10, `${p}: u4 s prechodom`);
-    if (u === 4 && op === '−') over((a % 10) < (b % 10), `${p}: u4 s prechodom`);
-    if (u === 6) over(a % b === 0, `${p}: delenie bez zvyšku`);
+    if (op === '÷') over(a % b === 0, `${p}: delenie bez zvyšku`);
+    if (u === 5) over(a >= 100 && a <= 999, `${p}: u5 delenec trojciferný`);
+    if (u === 9) over(a >= 10 && b >= 10, `${p}: u9 dvojciferné × dvojciferné`);
   }
 }
 
@@ -87,7 +85,7 @@ const PRAVIDLA = {
     const ok = t.every((x, i) => i < 4 || x - t[i - 2] === t[i - 2] - t[i - 4]);
     return ok ? t.at(-2) + (t.at(-2) - t.at(-4)) : null;
   },
-  zdvojeneRozdiely: (t) => { const d = dif(t); return d[0] !== 0 && d.every((x, i) => i === 0 || x === 2 * d[i - 1]) ? t.at(-1) + 2 * d.at(-1) : null; },
+  geometrickeRozdiely: (t) => { const d = dif(t); if (d[0] === 0) return null; const q = d[1] / d[0]; return Number.isInteger(q) && d.every((x, i) => i === 0 || x === q * d[i - 1]) ? t.at(-1) + q * d.at(-1) : null; },
   fibonacci: (t) => t.every((x, i) => i < 2 || x === t[i - 1] + t[i - 2]) ? t.at(-1) + t.at(-2) : null,
 };
 for (let u = 1; u <= 10; u++) {
@@ -95,9 +93,9 @@ for (let u = 1; u <= 10; u++) {
     const ul = postupnosti.vytvor(vytvorRng(s), u);
     const t = ul.data.cleny;
     const p = `postupnosti u${u} ${s} [${t.join(', ')}] → ${ul.odpoved}`;
-    over(t.length === (u >= 8 ? 6 : 5), `${p}: počet ukázaných`);
+    over(t.length === (u >= 6 ? 6 : 5), `${p}: počet ukázaných`);
     over(t.every(celeNezaporne) && celeNezaporne(ul.odpoved), `${p}: celé nezáporné čísla`);
-    over(Math.max(...t, ul.odpoved) <= 2500, `${p}: rozumná veľkosť čísel`);
+    over(Math.max(...t, ul.odpoved) <= 6000, `${p}: rozumná veľkosť čísel`);
     over(new Set([...t, ul.odpoved]).size === t.length + 1, `${p}: bez opakujúcich sa čísel (vrátane odpovede)`);
     let sediace = 0;
     for (const [meno, f] of Object.entries(PRAVIDLA)) {
@@ -113,7 +111,7 @@ for (let u = 1; u <= 10; u++) {
 }
 
 // ---------- Bludisko ----------
-const VELKOST = [4, 4, 5, 5, 6, 6, 7, 7, 8, 9];
+const VELKOST = [6, 7, 8, 8, 9, 10, 10, 11, 12, 12];
 for (let u = 1; u <= 10; u++) {
   for (const s of seedy('bl', u).slice(0, 120)) {
     const ul = bludisko.vytvor(vytvorRng(s), u);
@@ -145,7 +143,7 @@ for (let u = 1; u <= 10; u++) {
 over(bludisko.vysledok({ pomoci: 0 }) === 'prvy' && bludisko.vysledok({ pomoci: 1 }) === 'druhy' && bludisko.vysledok({ pomoci: 2 }) === 'ukazane', 'bludisko: výsledok podľa pomocí');
 
 // ---------- Dávka a pomocné ----------
-over(DAVKA.length === 7, 'dávka má 7 úloh');
+over(DAVKA.length === 14, 'dávka má 14 úloh');
 over(DAVKA.every(t => t in TYPY), 'dávka obsahuje iba známe typy');
 for (let i = 0; i < 60; i++) {
   const d = `2026-12-${String((i % 28) + 1).padStart(2, '0')}`;

@@ -6,11 +6,14 @@ import bludisko from './typy/bludisko.js';
 
 export const TYPY = { priklady, postupnosti, bludisko };
 
-// 7 úloh, asi 5–10 minút. Začína sa ľahko (príklad), bludisko je odmena na koniec.
-export const DAVKA = ['priklady', 'priklady', 'postupnosti', 'priklady', 'priklady', 'postupnosti', 'bludisko'];
+// 14 úloh, asi 15 minút: 8 príkladov, 4 postupnosti, 2 bludiská (v polovici a na konci).
+export const DAVKA = [
+  'priklady', 'priklady', 'postupnosti', 'priklady', 'postupnosti', 'priklady', 'bludisko',
+  'priklady', 'postupnosti', 'priklady', 'priklady', 'postupnosti', 'priklady', 'bludisko',
+];
 
-// Prvé úrovne, kým backend nepošle iné. Radšej ľahšie — úspech je dôležitejší.
-export const ZACIATOCNE_UROVNE = { priklady: 3, postupnosti: 1, bludisko: 1 };
+// Prvé úrovne, kým backend nepošle iné. Stred stupnice; prispôsobovanie ich rýchlo doladí.
+export const ZACIATOCNE_UROVNE = { priklady: 4, postupnosti: 3, bludisko: 3 };
 
 export function ulohaDna(datum, poradie, urovne) {
   const typId = DAVKA[poradie];

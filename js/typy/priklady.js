@@ -1,16 +1,16 @@
 // Typ úlohy: Príklady (+ − × ÷)
 //
-// Úrovne:
-//  1  sčítanie do 10
-//  2  sčítanie a odčítanie do 20
-//  3  do 100 bez prechodu cez desiatku
-//  4  do 100 s prechodom cez desiatku
-//  5  malá násobilka (2–9 × 2–9)
-//  6  delenie bez zvyšku v rámci násobilky
-//  7  trojciferné ± dvojciferné
-//  8  dvojciferné × jednociferné
-//  9  trojciferné ± trojciferné
-// 10  dvojkrokové: a × b ± c
+// Úrovne (dedko počíta dobre a násobí rôzne — stupnica začína na dospelej úrovni):
+//  1  trojciferné ± dvojciferné            (845 − 67)
+//  2  malá násobilka a delenie v nej        (7 × 8, 56 ÷ 7)
+//  3  trojciferné ± trojciferné            (761 − 253)
+//  4  dvojciferné × jednociferné           (47 × 8)
+//  5  trojciferné ÷ jednociferné bez zvyšku (434 ÷ 7)
+//  6  dvojkrokové a × b ± c                (27 × 6 − 48)
+//  7  dvojciferné × 11 až 19               (34 × 13)
+//  8  trojciferné × jednociferné           (238 × 7)
+//  9  dvojciferné × dvojciferné            (47 × 36)
+// 10  dva súčiny                           (34 × 12 − 17 × 6)
 
 import { zobrazCiselnuUlohu, POLICKO } from '../klavesnica.js';
 import { formatuj, naCislo } from '../rng.js';
@@ -38,9 +38,18 @@ function odcitanie(a, b) {
 }
 
 function nasobenie(a, b) {
+  if (b >= 10) {
+    const bd = bezJednotiek(b), bj = jednotky(b);
+    return {
+      op: '×', a, b, odpoved: a * b,
+      napoveda: `Po častiach: ${a} × ${bd} = ${f(a * bd)}${bj ? `, a ${a} × ${bj} = ${f(a * bj)}. Potom to sčítaj.` : '.'}`,
+    };
+  }
   return {
     op: '×', a, b, odpoved: a * b,
-    napoveda: a >= 10
+    napoveda: a >= 100
+      ? `Po častiach: ${bezJednotiek(a) - (a % 100 - jednotky(a))} × ${b}, potom ${a % 100 - jednotky(a)} × ${b}, potom ${jednotky(a)} × ${b} — a všetko sčítaj.`
+      : a >= 10
       ? `Po častiach: ${bezJednotiek(a)} × ${b} = ${f(bezJednotiek(a) * b)}, a ${jednotky(a)} × ${b} = ${jednotky(a) * b}. Potom to sčítaj.`
       : `${a} × ${b} je ${b}-krát ${a}. Napríklad ${a} × ${b - 1} = ${a * (b - 1)}, a ešte + ${a}.`,
   };
@@ -50,62 +59,51 @@ function delenie(delitel, podiel) {
   const a = delitel * podiel;
   return {
     op: '÷', a, b: delitel, odpoved: podiel,
-    napoveda: `Koľkokrát sa ${delitel} zmestí do ${f(a)}? Hľadáme číslo, pre ktoré ${delitel} × ? = ${f(a)}.`,
+    napoveda: podiel >= 10
+      ? `Skús odhad: ${delitel} × ${bezJednotiek(podiel)} = ${f(delitel * bezJednotiek(podiel))}. Koľko ešte zostáva do ${f(a)}?`
+      : `Koľkokrát sa ${delitel} zmestí do ${f(a)}? Hľadáme číslo, pre ktoré ${delitel} × ? = ${f(a)}.`,
+  };
+}
+
+function dvaKroky(r, a, b, c, plus) {
+  const s = a * b; const odp = plus ? s + c : s - c;
+  return {
+    op: plus ? '×+' : '×−', a, b, c, odpoved: odp,
+    zadanie: `${a} × ${b} ${plus ? '+' : '−'} ${f(c)}`,
+    napoveda: `Najprv násobenie: ${a} × ${b} = ?  Potom ${plus ? 'pripočítaj' : 'odčítaj'} ${f(c)}.`,
+    vysvetlenie: `${a} × ${b} = ${f(s)}, potom ${f(s)} ${plus ? '+' : '−'} ${f(c)} = ${f(odp)}.`,
   };
 }
 
 function vytvorPriklad(r, u) {
   switch (u) {
-    case 1: { const a = r.cislo(1, 8); return scitanie(a, r.cislo(1, 10 - a)); }
-    case 2: {
-      if (r.dalsie() < 0.5) { const a = r.cislo(3, 15); return scitanie(a, r.cislo(2, 20 - a)); }
-      const a = r.cislo(8, 20); return odcitanie(a, r.cislo(2, a - 1));
-    }
-    case 3: { // bez prechodu cez desiatku
-      if (r.dalsie() < 0.5) {
-        const a = r.cislo(11, 78); const ja = jednotky(a);
-        const b = r.cislo(1, 8 - Math.floor(a / 10)) * 10 + r.cislo(0, 9 - ja);
-        return scitanie(a, b < 2 ? 2 : b);
-      }
-      const a = r.cislo(25, 99); const ja = jednotky(a);
-      const b = r.cislo(1, Math.floor(a / 10) - 1) * 10 + r.cislo(0, ja);
-      return odcitanie(a, b);
-    }
-    case 4: { // s prechodom cez desiatku
-      if (r.dalsie() < 0.5) {
-        const a = r.cislo(12, 69); const ja = jednotky(a) || 5;
-        const a2 = bezJednotiek(a) + ja;
-        const jb = r.cislo(10 - ja, 9);
-        const b = r.cislo(1, Math.max(1, 8 - Math.floor(a2 / 10))) * 10 + jb;
-        return scitanie(a2, b);
-      }
-      const a = r.cislo(31, 99); const ja = jednotky(a);
-      const a2 = ja === 9 ? a - 1 : a; const ja2 = jednotky(a2);
-      const jb = r.cislo(ja2 + 1, 9);
-      const b = r.cislo(1, Math.floor(a2 / 10) - 2) * 10 + jb;
-      return odcitanie(a2, b);
-    }
-    case 5: return nasobenie(r.cislo(2, 9), r.cislo(2, 9));
-    case 6: return delenie(r.cislo(2, 9), r.cislo(2, 9));
-    case 7: {
-      const a = r.cislo(120, 899); const b = r.cislo(12, 98);
+    case 1: {
+      const a = r.cislo(120, 899); const b = r.cislo(23, 98);
       return r.dalsie() < 0.5 ? scitanie(a, b) : odcitanie(a, b);
     }
-    case 8: return nasobenie(r.cislo(12, 49), r.cislo(3, 9));
-    case 9: {
+    case 2: return r.dalsie() < 0.5 ? nasobenie(r.cislo(3, 9), r.cislo(3, 9)) : delenie(r.cislo(3, 9), r.cislo(3, 9));
+    case 3: {
       if (r.dalsie() < 0.5) { const a = r.cislo(150, 799); return scitanie(a, r.cislo(120, 999 - a)); }
       const a = r.cislo(400, 999); return odcitanie(a, r.cislo(110, a - 100));
     }
-    default: { // 10: a × b ± c
-      const a = r.cislo(12, 29); const b = r.cislo(3, 9); const s = a * b;
-      const plus = r.dalsie() < 0.5;
-      const c = plus ? r.cislo(11, 89) : r.cislo(11, Math.min(89, s - 10));
-      const odp = plus ? s + c : s - c;
+    case 4: return nasobenie(r.cislo(13, 97), r.cislo(3, 9));
+    case 5: { const d = r.cislo(3, 9); return delenie(d, r.cislo(Math.ceil(100 / d), Math.floor(999 / d))); }
+    case 6: {
+      const a = r.cislo(12, 49), b = r.cislo(3, 9), plus = r.dalsie() < 0.5;
+      return dvaKroky(r, a, b, plus ? r.cislo(11, 99) : r.cislo(11, Math.min(99, a * b - 10)), plus);
+    }
+    case 7: return nasobenie(r.cislo(12, 49), r.cislo(11, 19));
+    case 8: return nasobenie(r.cislo(112, 389), r.cislo(3, 9));
+    case 9: return nasobenie(r.cislo(23, 89), r.cislo(21, 79));
+    default: { // 10: a × b ± c × d
+      const a = r.cislo(12, 39), b = r.cislo(11, 19), c = r.cislo(12, 29), d = r.cislo(3, 9);
+      const s1 = a * b, s2 = c * d, plus = r.dalsie() < 0.5 || s1 <= s2;
+      const odp = plus ? s1 + s2 : s1 - s2;
       return {
-        op: plus ? '×+' : '×−', a, b, c, odpoved: odp,
-        zadanie: `${a} × ${b} ${plus ? '+' : '−'} ${c}`,
-        napoveda: `Najprv násobenie: ${a} × ${b} = ?  Potom ${plus ? 'pripočítaj' : 'odčítaj'} ${c}.`,
-        vysvetlenie: `${a} × ${b} = ${f(s)}, potom ${f(s)} ${plus ? '+' : '−'} ${c} = ${f(odp)}.`,
+        op: 'dva', a, b, c, d, odpoved: odp,
+        zadanie: `${a} × ${b} ${plus ? '+' : '−'} ${c} × ${d}`,
+        napoveda: `Najprv obe násobenia: ${a} × ${b} = ?  a  ${c} × ${d} = ?  Potom ich ${plus ? 'sčítaj' : 'odčítaj'}.`,
+        vysvetlenie: `${a} × ${b} = ${f(s1)}, ${c} × ${d} = ${f(s2)}, a ${f(s1)} ${plus ? '+' : '−'} ${f(s2)} = ${f(odp)}.`,
       };
     }
   }
@@ -124,7 +122,7 @@ export default {
       odpoved: p.odpoved,
       napoveda: p.napoveda,
       vysvetlenie: p.vysvetlenie ?? `${zadanie} = ${f(p.odpoved)}.`,
-      data: { op: p.op, a: p.a, b: p.b, c: p.c },
+      data: { op: p.op, a: p.a, b: p.b, c: p.c, d: p.d },
     };
   },
 

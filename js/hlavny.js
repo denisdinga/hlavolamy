@@ -42,7 +42,7 @@ function uvod() {
       <h1>${pozdrav()}, ${hrac.o}!</h1>
       <p class="veta">${rozrobene
         ? `Dnes už máš hotové ${stav.hotove.length} z ${DAVKA.length} úloh. Poďme dokončiť zvyšok.`
-        : `Dnes ťa čaká ${DAVKA.length} úloh: príklady, postupnosti a na koniec bludisko. Je to asi na 10 minút.`}</p>
+        : `Dnes ťa čaká ${DAVKA.length} úloh: príklady, postupnosti a na koniec bludisko. Je to asi na štvrť hodiny.`}</p>
       <button type="button" class="tl tl-hlavne" id="zacat">${rozrobene ? 'Pokračovať' : 'Začať'}</button>
     </section>`;
   document.getElementById('zacat').addEventListener('click', () => dalsia());
@@ -54,7 +54,7 @@ function zaver() {
   obsah.innerHTML = `
     <section class="obrazovka zaver">
       <h1>Hotovo na dnes.</h1>
-      <p class="veta">${prve >= 5 ? 'Výborná práca' : 'Dobrá práca'}, ${hrac.o}. Zajtra ráno prídu nové úlohy.</p>
+      <p class="veta">${prve >= DAVKA.length * 0.7 ? 'Výborná práca' : 'Dobrá práca'}, ${hrac.o}. Zajtra ráno prídu nové úlohy.</p>
       <button type="button" class="tl tl-druhotne" id="extra">Ešte jedna úloha</button>
     </section>`;
   document.getElementById('extra').addEventListener('click', () => {

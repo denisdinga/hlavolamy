@@ -1,16 +1,16 @@
 // Typ úlohy: Postupnosti — „doplň ďalšie číslo“
 //
-// Úrovne (ukázaných členov: 5 pri úrovniach 1–7, 6 pri 8–10):
-//  1  pripočítavanie +1 až +3, malé čísla
-//  2  pripočítavanie +2 až +10
-//  3  odpočítavanie −2 až −10
-//  4  pripočítavanie / odpočítavanie po 11 až 25
-//  5  násobenie ×2 alebo ×3
-//  6  rozdiel rastie o 1 (+2, +3, +4, …)
-//  7  násobenie ×2, ×3, ×4 alebo delenie ÷2
-//  8  striedavo + a − (+5, −2, +5, −2, …)
-//  9  dve postupnosti zapletené do seba (každé druhé číslo)
-// 10  rozdiel sa zdvojnásobuje (+1, +2, +4, +8, …)
+// Úrovne (ukázaných členov: 5 pri úrovniach 1–5, 6 pri 6–10):
+//  1  pripočítavanie / odpočítavanie po 3 až 15
+//  2  pripočítavanie / odpočítavanie po 11 až 49, väčšie čísla
+//  3  násobenie ×2 alebo ×3
+//  4  rozdiel rastie o 1–3 (+4, +6, +8, …)
+//  5  násobenie ×2 až ×4 alebo delenie ÷2, ÷3
+//  6  striedavo + a − (+7, −3, +7, −3, …)
+//  7  dve postupnosti zapletené do seba (každé druhé číslo)
+//  8  rozdiel sa zdvojnásobuje alebo strojnásobuje (+2, +4, +8, …)
+//  9  každé číslo je súčet dvoch predchádzajúcich
+// 10  dvojkrokové pravidlo: ×2 alebo ×3 a ešte ± niečo (3, 7, 15, 31, …)
 //
 // Každá postupnosť musí mať jediné rozumné pokračovanie — overuje test.
 
@@ -22,80 +22,86 @@ const znak = (d) => (d >= 0 ? `+${d}` : `−${-d}`);
 const rozdiely = (cl) => cl.slice(1).map((x, i) => x - cl[i]);
 
 function vytvorPostupnost(r, u) {
-  const n = u >= 8 ? 6 : 5; // počet ukázaných
+  const n = u >= 6 ? 6 : 5; // počet ukázaných
   const cleny = [];
   let pravidlo, napoveda;
+  const rozdielyText = (k) => rozdiely(cleny.slice(0, k)).map(znak).join(', ');
 
   switch (u) {
-    case 1: case 2: case 4: {
-      const d = u === 1 ? r.cislo(1, 3) : u === 2 ? r.cislo(2, 10) : r.cislo(11, 25);
-      const dole = u === 4 && r.dalsie() < 0.5;
-      const start = dole ? r.cislo(d * (n + 1) + 5, d * (n + 1) + 150) : r.cislo(1, u === 1 ? 10 : 50);
-      const krok = dole ? -d : d;
-      for (let i = 0; i <= n; i++) cleny.push(start + i * krok);
+    case 1: case 2: {
+      const d = u === 1 ? r.cislo(3, 15) : r.cislo(11, 49);
+      const dole = r.dalsie() < 0.5;
+      const start = dole ? r.cislo(d * (n + 1) + 5, d * (n + 1) + (u === 1 ? 100 : 400)) : r.cislo(1, u === 1 ? 100 : 400);
+      for (let i = 0; i <= n; i++) cleny.push(start + i * (dole ? -d : d));
       pravidlo = `Každé ďalšie číslo je o ${d} ${dole ? 'menšie' : 'väčšie'}.`;
-      napoveda = `Pozri sa, o koľko sa čísla menia: ${rozdiely(cleny.slice(0, 3)).map(znak).join(', ')}, …`;
+      napoveda = `Pozri sa, o koľko sa čísla menia: ${rozdielyText(3)}, …`;
       break;
     }
-    case 3: {
-      const d = r.cislo(2, 10);
-      const start = r.cislo(d * (n + 1) + 1, d * (n + 1) + 60);
-      for (let i = 0; i <= n; i++) cleny.push(start - i * d);
-      pravidlo = `Každé ďalšie číslo je o ${d} menšie.`;
-      napoveda = `Pozri sa, o koľko sa čísla zmenšujú: ${rozdiely(cleny.slice(0, 3)).map(znak).join(', ')}, …`;
-      break;
-    }
-    case 5: case 7: {
-      const moznosti = u === 5 ? [2, 3] : [2, 3, 4, 'del'];
-      const k = r.vyber(moznosti);
-      if (k === 'del') {
-        const koniec = r.cislo(1, 9);
-        let x = koniec * 2 ** n;
-        for (let i = 0; i <= n; i++) { cleny.push(x); x /= 2; }
-        pravidlo = 'Každé ďalšie číslo je polovica predchádzajúceho.';
-        napoveda = `Porovnaj ${f(cleny[0])} a ${f(cleny[1])}. Čo sa stalo s číslom?`;
+    case 3: case 5: {
+      const k = u === 3 ? r.vyber([2, 3]) : r.vyber([2, 3, 4, 'd2', 'd3']);
+      if (typeof k === 'string') {
+        const q = k === 'd2' ? 2 : 3;
+        let x = r.cislo(1, q === 2 ? 15 : 5) * q ** n;
+        for (let i = 0; i <= n; i++) { cleny.push(x); x /= q; }
+        pravidlo = q === 2 ? 'Každé ďalšie číslo je polovica predchádzajúceho.' : 'Každé ďalšie číslo je tretina predchádzajúceho.';
+        napoveda = `Porovnaj ${f(cleny[0])} a ${f(cleny[1])}. Koľkokrát je menšie?`;
       } else {
-        const maxStart = Math.max(1, Math.floor(u === 5 ? (k === 2 ? 6 : 2) : (k === 4 ? 2 : k === 3 ? 3 : 9)));
+        const maxStart = { 2: 12, 3: 4, 4: 2 }[k];
         let x = r.cislo(1, maxStart);
         for (let i = 0; i <= n; i++) { cleny.push(x); x *= k; }
         pravidlo = `Každé ďalšie číslo je ${k}-krát väčšie.`;
-        napoveda = `Čísla rastú stále rýchlejšie. Skús, koľkokrát je ${f(cleny[2])} väčšie ako ${f(cleny[1])}.`;
+        napoveda = `Čísla rastú stále rýchlejšie. Koľkokrát je ${f(cleny[2])} väčšie ako ${f(cleny[1])}?`;
       }
       break;
     }
-    case 6: {
-      const d = r.cislo(1, 5);
-      let x = r.cislo(1, 30);
-      for (let i = 0; i <= n; i++) { cleny.push(x); x += d + i; }
-      pravidlo = `Rozdiel sa zakaždým zväčší o 1: ${rozdiely(cleny).map(znak).join(', ')}.`;
-      napoveda = `Pozri sa na rozdiely: ${rozdiely(cleny.slice(0, 4)).map(znak).join(', ')}, … Ako pokračujú?`;
+    case 4: {
+      const d = r.cislo(1, 9), k = r.cislo(1, 3);
+      let x = r.cislo(1, 60);
+      for (let i = 0; i <= n; i++) { cleny.push(x); x += d + i * k; }
+      pravidlo = `Rozdiel sa zakaždým zväčší o ${k}: ${rozdiely(cleny).map(znak).join(', ')}.`;
+      napoveda = `Pozri sa na rozdiely: ${rozdielyText(4)}, … Ako pokračujú?`;
       break;
     }
-    case 8: {
-      // a ≠ 2b, inak sa čísla opakujú (4, 8, 6, 10, 8 …) a to mätie
-      const a = r.cislo(3, 9); let b;
-      do { b = r.cislo(1, a - 1); } while (a === 2 * b);
-      let x = r.cislo(1, 20);
+    case 6: {
+      const a = r.cislo(5, 19); let b;
+      do { b = r.cislo(2, a - 1); } while (a === 2 * b);
+      let x = r.cislo(5, 60);
       for (let i = 0; i <= n; i++) { cleny.push(x); x += i % 2 === 0 ? a : -b; }
       pravidlo = `Striedavo ${znak(a)} a ${znak(-b)}.`;
-      napoveda = `Pozri sa na rozdiely: ${rozdiely(cleny.slice(0, 4)).map(znak).join(', ')}, … Opakujú sa.`;
+      napoveda = `Pozri sa na rozdiely: ${rozdielyText(4)}, … Opakujú sa.`;
       break;
     }
-    case 9: {
-      const a = r.cislo(2, 6); let b;
-      do { b = r.cislo(5, 15) * r.vyber([1, -1]); } while (b === a || b === -a);
-      const p = r.cislo(1, 15); const q = b < 0 ? r.cislo(60, 90) : r.cislo(20, 60);
+    case 7: {
+      const a = r.cislo(3, 12); let b;
+      do { b = r.cislo(5, 25) * r.vyber([1, -1]); } while (b === a || b === -a);
+      const p = r.cislo(1, 40); const q = b < 0 ? r.cislo(100, 160) : r.cislo(30, 90);
       for (let i = 0; i <= n; i++) cleny.push(i % 2 === 0 ? p + (i / 2) * a : q + ((i - 1) / 2) * b);
       pravidlo = `Sú to dve postupnosti striedavo: ${f(cleny[0])}, ${f(cleny[2])}, ${f(cleny[4])}, … (${znak(a)}) a ${f(cleny[1])}, ${f(cleny[3])}, ${f(cleny[5])}, … (${znak(b)}).`;
       napoveda = `Pozri sa iba na každé druhé číslo: ${f(cleny[0])}, ${f(cleny[2])}, ${f(cleny[4])}, …`;
       break;
     }
-    default: { // 10
-      const d = r.cislo(1, 3);
-      let x = r.cislo(1, 20);
-      for (let i = 0; i <= n; i++) { cleny.push(x); x += d * 2 ** i; }
-      pravidlo = `Rozdiel sa zakaždým zdvojnásobí: ${rozdiely(cleny).map(znak).join(', ')}.`;
-      napoveda = `Pozri sa na rozdiely: ${rozdiely(cleny.slice(0, 4)).map(znak).join(', ')}, …`;
+    case 8: {
+      const m = r.vyber([2, 2, 3]); const d = r.cislo(1, m === 2 ? 5 : 2);
+      let x = r.cislo(1, 30);
+      for (let i = 0; i <= n; i++) { cleny.push(x); x += d * m ** i; }
+      pravidlo = `Rozdiel sa zakaždým ${m === 2 ? 'zdvojnásobí' : 'strojnásobí'}: ${rozdiely(cleny).map(znak).join(', ')}.`;
+      napoveda = `Pozri sa na rozdiely: ${rozdielyText(4)}, …`;
+      break;
+    }
+    case 9: {
+      const a = r.cislo(1, 9), b = r.cislo(a + 1, 15);
+      cleny.push(a, b);
+      while (cleny.length <= n) cleny.push(cleny.at(-1) + cleny.at(-2));
+      pravidlo = 'Každé číslo je súčet dvoch predchádzajúcich.';
+      napoveda = `Pozri sa, ako vzniklo ${f(cleny[2])} z čísel ${f(cleny[0])} a ${f(cleny[1])}.`;
+      break;
+    }
+    default: { // 10: x → k·x + c
+      const k = r.vyber([2, 2, 3]); const c = r.vyber([-3, -2, -1, 1, 2, 3]);
+      let x = k === 2 ? r.cislo(4, 12) : r.cislo(2, 5); // pri ×2 a −3 musí začiatok byť > 3, inak klesá do záporných
+      for (let i = 0; i <= n; i++) { cleny.push(x); x = k * x + c; }
+      pravidlo = `Každé číslo je ${k === 2 ? 'dvojnásobok' : 'trojnásobok'} predchádzajúceho a ešte ${znak(c)}.`;
+      napoveda = `Skús, koľkokrát je ${f(cleny[2])} väčšie ako ${f(cleny[1])} — a čo chýba alebo prebýva.`;
     }
   }
   return { ukazane: cleny.slice(0, n), odpoved: cleny[n], pravidlo, napoveda };
