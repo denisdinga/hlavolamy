@@ -123,14 +123,17 @@ export default {
       <div class="bludisko-obal">
         <div class="list list-bludisko">
           <p class="popis">Veď čiaru zo štartu do cieľa — ťahaj prstom alebo myšou.</p>
-          <div class="bludisko" style="--n:${n}" tabindex="0" aria-label="Bludisko ${n} krát ${n}. Šípkami sa hýbeš.">
-            <svg class="ciara" aria-hidden="true"><polyline points=""/><circle r="0"/></svg>
+          <div class="bludisko-okno">
+            <div class="bludisko" style="--n:${n}" tabindex="0" aria-label="Bludisko ${n} krát ${n}. Šípkami sa hýbeš.">
+              <svg class="ciara" aria-hidden="true"><polyline points=""/><circle r="0"/></svg>
+            </div>
           </div>
           <p class="spatna-vazba" role="status"></p>
         </div>
         <div class="bludisko-tlacidla">
           <button type="button" class="tl tl-druhotne" data-a="pomoc">Pomôž mi</button>
           <button type="button" class="tl tl-druhotne" data-a="znova">Začať odznova</button>
+          <button type="button" class="tl tl-druhotne" data-a="lupa" hidden>Celé bludisko</button>
         </div>
       </div>`;
     const mriezka = kontajner.querySelector('.bludisko');
@@ -139,6 +142,32 @@ export default {
     const bodka = svg.querySelector('circle');
     const vazba = kontajner.querySelector('.spatna-vazba');
     const tlPomoc = kontajner.querySelector('[data-a="pomoc"]');
+    const okno = kontajner.querySelector('.bludisko-okno');
+    const tlLupa = kontajner.querySelector('[data-a="lupa"]');
+
+    // Telefón: pri veľkom bludisku by políčka mali ~17 px (pod pravidlom 36 px). Vtedy ukážeme priblížený výrez s veľkými
+    // políčkami, ktorý sa po každom ťahu posunie za koncom čiary. Tlačidlo prepne na celé bludisko.
+    // Bludisko je stále to isté (úloha ani úroveň sa nemenia), mení sa iba pohľad.
+    const POLE_LUPA = 36; // pravidlo: políčka bludiska min. 36 px
+    let lupa = false;
+    const lupaMa = () => window.matchMedia('(max-width: 600px)').matches && (window.innerWidth - 44) / n < 26;
+    const nastavLupu = (zap) => {
+      lupa = zap;
+      okno.classList.toggle('lupa', zap);
+      mriezka.style.setProperty('--pole', zap ? POLE_LUPA + 'px' : '');
+      tlLupa.textContent = zap ? 'Celé bludisko' : 'Priblížiť';
+      requestAnimationFrame(() => { prekresli(); centruj(false); });
+    };
+    const centruj = (plynule = true) => {
+      if (!lupa) return;
+      const [kx, ky] = cesta[cesta.length - 1];
+      const s = mriezka.getBoundingClientRect().width / n;
+      okno.scrollTo({
+        left: (kx + .5) * s - okno.clientWidth / 2,
+        top: (ky + .5) * s - okno.clientHeight / 2,
+        behavior: plynule ? 'smooth' : 'auto',
+      });
+    };
 
     for (let y = 0; y < n; y++) {
       for (let x = 0; x < n; x++) {
@@ -212,7 +241,7 @@ export default {
       if (p[0] === kx && p[1] === ky) return;
       chodNa(p, false);
     });
-    const pusti = () => { kreslim = false; };
+    const pusti = () => { kreslim = false; centruj(); };
     mriezka.addEventListener('pointerup', pusti);
     mriezka.addEventListener('pointercancel', pusti);
 
@@ -222,18 +251,19 @@ export default {
       e.preventDefault();
       const [kx, ky] = koniec();
       const p = [kx + smer[0], ky + smer[1]];
-      if (suSusedia(bl, [kx, ky], p)) chodNa(p, false); else hlaska('Tadiaľ je stena.');
+      if (suSusedia(bl, [kx, ky], p)) { chodNa(p, false); centruj(); } else hlaska('Tadiaľ je stena.');
     });
 
     kontajner.querySelector('.bludisko-tlacidla').addEventListener('click', (e) => {
       const a = e.target.closest('button')?.dataset.a;
       if (!a || hotovo) return;
-      if (a === 'znova') { cesta = [[0, 0]]; vazba.textContent = ''; prekresli(); return; }
+      if (a === 'lupa') { nastavLupu(!lupa); return; }
+      if (a === 'znova') { cesta = [[0, 0]]; vazba.textContent = ''; prekresli(); centruj(); return; }
       pomoci++;
       if (pomoci >= 2) {
         cesta = spravnaCesta.slice();
         hlaska('Toto je celá cesta do cieľa.', 'ukazana');
-        prekresli();
+        if (lupa) nastavLupu(false); else prekresli();
         setTimeout(dokonci, 700);
         return;
       }
@@ -244,11 +274,12 @@ export default {
       cesta = spravnaCesta.slice(0, Math.min(spravnaCesta.length - 1, zhoda + kroky));
       hlaska('Ukázal som kúsok cesty. Pokračuj odtiaľto.');
       tlPomoc.textContent = 'Ukáž celú cestu';
-      prekresli();
+      prekresli(); centruj();
     });
 
     new ResizeObserver(prekresli).observe(mriezka);
     requestAnimationFrame(prekresli);
+    if (lupaMa()) { tlLupa.hidden = false; nastavLupu(true); }
 
     return {
       napoveda() {}, ukazOdpoved() {},

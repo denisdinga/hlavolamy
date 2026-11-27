@@ -26,7 +26,8 @@ export function nacitajZOdkazu() {
   if (p.get('o')) hrac.o = p.get('o').slice(0, 30);
   zapis(K.hrac, hrac);
 
-  const ulozene = citaj(K.urovne, { ...ZACIATOCNE_UROVNE, _datum: '' });
+  // nové typy úloh (napr. tvary) dostanú úvodnú úroveň aj u toho, kto má uložené staršie úrovne
+  const ulozene = { ...ZACIATOCNE_UROVNE, _datum: '', ...citaj(K.urovne, {}) };
   const u = p.get('u');
   const d = p.get('d') || '';
   if (u && d >= (ulozene._datum || '')) {
@@ -40,7 +41,7 @@ export function nacitajZOdkazu() {
   } else if (!localStorage.getItem(K.urovne)) {
     zapis(K.urovne, ulozene);
   }
-  return { hrac, urovne: citaj(K.urovne, ulozene) };
+  return { hrac, urovne: { ...ZACIATOCNE_UROVNE, ...citaj(K.urovne, ulozene) } };
 }
 
 export function stavDna(datum) {

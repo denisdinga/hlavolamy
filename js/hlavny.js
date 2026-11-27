@@ -38,7 +38,7 @@ function uvod() {
       <h1>Ahoj, ${hrac.o}!</h1>
       <p class="veta">${rozrobene
         ? `Dnes už máš hotové ${stav.hotove.length} z ${DAVKA.length} úloh. Poďme dokončiť zvyšok.`
-        : `Dnes ťa čaká ${DAVKA.length} úloh: príklady, číselné rady, pamäť, znamienka, nákup a čas, pyramída a bludisko. Je to asi na 10 minút.`}</p>
+        : `Dnes ťa čaká ${DAVKA.length} úloh: príklady, číselné rady, pamäť, tvary, znamienka, nákup a čas, pyramída a bludisko. Je to asi na 10 minút.`}</p>
       <button type="button" class="tl tl-hlavne" id="zacat">${rozrobene ? 'Pokračovať' : 'Začať'}</button>
     </section>`;
   document.getElementById('zacat').addEventListener('click', () => dalsia());

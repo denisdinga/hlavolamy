@@ -9,6 +9,7 @@ import pamat from '../js/typy/pamat.js';
 import znamienka, { vsetkyKombinacie } from '../js/typy/znamienka.js';
 import pyramida, { postavPyramidu } from '../js/typy/pyramida.js';
 import kazdodenne, { naCenty, naMinuty } from '../js/typy/kazdodenne.js';
+import tvary from '../js/typy/tvary.js';
 
 const SEEDOV = 300;
 let chyb = 0, kontrol = 0;
@@ -222,6 +223,53 @@ for (let u = 1; u <= 10; u++) for (const sd of seedy('kd', u)) {
 }
 over(naCenty('2,36') === 236 && naCenty('3') === 300 && naCenty('2,5') === 250 && naCenty('x') === null, 'naCenty');
 over(naMinuty('14:05') === 845 && naMinuty('1405') === 845 && naMinuty('9') === 540 && naMinuty('25:00') === null, 'naMinuty');
+
+// ---------- Tvary ----------
+// Nezávislá geometria (iná implementácia než v generátore): všetkých 8 polôh tvaru cez maticu.
+const T_POLOHY = [[1, 0, 0, 1], [0, -1, 1, 0], [-1, 0, 0, -1], [0, 1, -1, 0]];   // otočenia
+const T_ZRKADLA = T_POLOHY.map(([a, b, c, d]) => [-a, b, -c, d]);                 // otočenia po prevrátení
+function tPodpis(t, [a, b, c, d]) {
+  const q = t.map(([x, y]) => [a * x + b * y, c * x + d * y]);
+  const mx = Math.min(...q.map(p => p[0])), my = Math.min(...q.map(p => p[1]));
+  return q.map(([x, y]) => (x - mx) * 100 + (y - my)).sort((m, n) => m - n).join('|');
+}
+const tOtocenim = (a, b) => T_POLOHY.some(m => tPodpis(a, T_POLOHY[0]) === tPodpis(b, m));
+const tAjPrevratenim = (a, b) => [...T_POLOHY, ...T_ZRKADLA].some(m => tPodpis(a, T_POLOHY[0]) === tPodpis(b, m));
+function tSuvisly(t) {
+  const m = new Set(t.map(([x, y]) => x * 100 + y)); const v = new Set([t[0][0] * 100 + t[0][1]]); const rad = [t[0]];
+  while (rad.length) { const [x, y] = rad.pop(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const k = (x + dx) * 100 + y + dy; if (m.has(k) && !v.has(k)) { v.add(k); rad.push([x + dx, y + dy]); } } }
+  return v.size === t.length && m.size === t.length;
+}
+const T_POCET = { otocenie: [4, 4, 5, 5, 6, 6, 7, 7, 8, 9], doplnenie: [3, 4, 4, 5, 5, 6, 6, 7, 8, 9] };
+const tDruhy = { otocenie: 0, doplnenie: 0 };
+for (let u = 1; u <= 10; u++) for (const sd of seedy('tv', u)) {
+  const ul = tvary.vytvor(vytvorRng(sd), u); const p = `tvary u${u} ${sd} ${ul.data.druh}`;
+  const { druh, vzor, doska, moznosti } = ul.data; tDruhy[druh]++;
+  const k = T_POCET[druh][u - 1];
+  over(moznosti.length === (u <= 2 ? 3 : 4), `${p}: počet možností`);
+  const vel = (t, i) => i === ul.odpoved || !(druh === 'doplnenie' && u <= 3) ? t.length === k : (t.length === k || t.length === k + 1);
+  over(moznosti.every((t, i) => vel(t, i) && tSuvisly(t)), `${p}: možnosti súvislé, ${k} štvorčekov`);
+  over(new Set(moznosti.map(t => tPodpis(t, T_POLOHY[0]))).size === moznosti.length, `${p}: možnosti sa nezobrazujú rovnako`);
+  over(!/NaN|undefined/.test(ul.zadanie + ul.napoveda + ul.vysvetlenie + ul.odpovedText), `${p}: texty`);
+  if (druh === 'otocenie') {
+    over(vzor.length === k && tSuvisly(vzor), `${p}: vzor`);
+    const zhodne = moznosti.map((t, i) => tOtocenim(vzor, t) ? i : -1).filter(i => i >= 0);
+    over(zhodne.length === 1 && zhodne[0] === ul.odpoved, `${p}: práve jedna pootočená zhoda a je to odpoveď`);
+    over(tPodpis(moznosti[ul.odpoved], T_POLOHY[0]) !== tPodpis(vzor, T_POLOHY[0]), `${p}: správna nie je natočená rovnako ako vzor`);
+    if (u >= 4) over(moznosti.some((t, i) => i !== ul.odpoved && tAjPrevratenim(vzor, t)), `${p}: je tam zrkadlová možnosť`);
+    else over(moznosti.every((t, i) => i === ul.odpoved || !tAjPrevratenim(vzor, t)), `${p}: bez zrkadla na nízkej úrovni`);
+  } else {
+    const dset = new Set(doska.diera.map(([x, y]) => x * 100 + y));
+    over(doska.diera.length === k && tSuvisly(doska.diera), `${p}: diera súvislá, ${k} štvorčekov`);
+    over(doska.diera.every(([x, y]) => x >= 1 && y >= 1 && x < doska.w - 1 && y < doska.h - 1), `${p}: diera je vnútri dosky`);
+    over(dset.size === k, `${p}: diera bez duplicít`);
+    const zapadnu = moznosti.map((t, i) => tAjPrevratenim(doska.diera, t) ? i : -1).filter(i => i >= 0);
+    over(zapadnu.length === 1 && zapadnu[0] === ul.odpoved, `${p}: zapadne práve jeden dielik (aj s prevrátením)`);
+  }
+  over(tvary.over(ul, ul.odpoved) && !tvary.over(ul, (ul.odpoved + 1) % moznosti.length), `${p}: over`);
+  over(ul.odpovedText === 'ABCD'[ul.odpoved], `${p}: písmeno odpovede`);
+}
+over(tDruhy.otocenie > 1000 && tDruhy.doplnenie > 1000, `tvary: oba druhy sa striedajú (${tDruhy.otocenie}/${tDruhy.doplnenie})`);
 
 // ---------- Dávka a pomocné ----------
 over(DAVKA.length === 14, 'dávka má 14 úloh');

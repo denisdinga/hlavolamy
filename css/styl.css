@@ -186,7 +186,17 @@ h1 { font-size: clamp(44px, 6vw, 64px); line-height: 1.1; margin: 0 0 20px; }
 .ciara polyline { fill: none; stroke: var(--zelena); stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
 .ciara circle { fill: rgba(255, 255, 255, .55); stroke: var(--zelena); stroke-width: 6px; }
 
-.bludisko-obal { display: grid; gap: 16px; }
+.bludisko-okno { max-width: 100%; }
+/* Priblížený výrez na telefóne: posúva ho iba aplikácia (za koncom čiary), prst kreslí. */
+.bludisko-okno.lupa {
+  width: calc(100vw - 32px); max-width: 100%;
+  height: clamp(280px, calc(100vh - 290px), 560px); height: clamp(280px, calc(100svh - 290px), 560px);
+  overflow: hidden; border: 3px solid var(--stena); border-radius: 8px; background: var(--list);
+}
+.bludisko-okno .bludisko { width: max-content; }
+.bludisko-okno.lupa .bludisko { margin: 0; border-width: 0; }
+.bludisko-obal { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.list-bludisko { min-width: 0; }
 .bludisko-tlacidla { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
 .bludisko-tlacidla .tl { font-size: 24px; min-width: 0; padding: 0 28px; }
 
@@ -194,6 +204,33 @@ h1 { font-size: clamp(44px, 6vw, 64px); line-height: 1.1; margin: 0 0 20px; }
   .bludisko-obal { grid-template-columns: 1fr auto; align-items: start; }
   .bludisko-tlacidla { flex-direction: column; }
   .bludisko { --pole: clamp(16px, min(calc((100vh - 200px) / var(--n)), calc((100vw - 420px) / var(--n))), 60px); }
+}
+
+/* ---------- Tvary ---------- */
+.tvary { display: grid; gap: 16px; }
+.list-tvary { display: flex; flex-direction: column; align-items: center; }
+.tvar-vzor { display: flex; justify-content: center; margin: 8px 0; }
+.tvar-vzor svg { width: min(240px, 55vw); height: auto; max-height: 34vh; }
+.tvar rect { fill: var(--modra); stroke: var(--list); stroke-width: .08; }
+.tvar-vzorovy rect { fill: var(--atrament); }
+.tvar-doska rect.plna { fill: var(--okraj); stroke: var(--list); stroke-width: .06; }
+.tvar-doska rect.diera { fill: var(--list); stroke: var(--atrament); stroke-width: .05; stroke-dasharray: .14 .1; }
+.tvary-moznosti { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; }
+.moznost {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-height: 150px; padding: 12px 8px 8px;
+  background: var(--list); border: 3px solid var(--okraj); border-radius: 14px;
+}
+.moznost svg { width: 100%; max-width: 140px; height: auto; }
+.moznost .pismeno { font-size: 24px; font-weight: 700; }
+.moznost.zvolena { border-color: var(--modra); border-width: 4px; }
+.moznost.ok { border-color: var(--zelena); background: var(--zelena-svetla); border-width: 4px; }
+.moznost.ukazana { border-color: var(--jantar); background: var(--jantar-svetly); border-width: 4px; }
+.moznost.vyradena { opacity: .3; }
+.moznost:disabled { cursor: default; }
+@media (min-width: 1000px) and (min-aspect-ratio: 1/1) {
+  .tvary { grid-template-columns: 1fr 1fr; align-items: start; }
+  .tvary-moznosti { grid-template-columns: 1fr 1fr; }
 }
 
 /* ---------- Zapamätaj si ---------- */
@@ -264,6 +301,12 @@ h1 { font-size: clamp(44px, 6vw, 64px); line-height: 1.1; margin: 0 0 20px; }
   .bludisko-obal { gap: 8px; }
   .bludisko-tlacidla { gap: 8px; }
   .bludisko-tlacidla .tl { font-size: 17px; padding: 0 12px; flex: 1; min-height: 48px; }
+  .tvary { gap: 8px; }
+  .tvar-vzor svg { width: min(170px, 45vw); max-height: 26vh; }
+  .tvary-moznosti { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .moznost { min-height: 0; padding: 8px 6px 4px; border-width: 2px; }
+  .moznost svg { max-width: 96px; }
+  .moznost .pismeno { font-size: 18px; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
